@@ -2,63 +2,76 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-# Определяем архитектуру MLP с фиксированными весами
-# Define the architecture of MLP with fixed weights
+# Определяем более сложную архитектуру фиксированной сети
+# Define a more complex architecture of the fixed network
 class FixedMLP(nn.Module):
     def __init__(self):
         super(FixedMLP, self).__init__()
-        self.layers = nn.Sequential(
-            nn.Linear(10, 20),  # Вход из 10 признаков в 20 нейронов
-                                # Input from 10 features to 20 neurons
-            nn.ReLU(),
-            nn.Linear(20, 1)    # Выходной слой
-                                # Output layer
-        )
-        # Инициализируем фиксированные веса
-        # Initialize fixed weights
-        self._initialize_weights()
-
-    def _initialize_weights(self):
-        with torch.no_grad():
-            for param in self.parameters():
-                param.uniform_(-1, 1)  # Инициализируем веса в диапазоне [-1, 1]
-                                        # Initialize weights in the range [-1, 1]
-
+        l1 = nn.Linear(2, 8)
+        nn.init.uniform_(l1.weight, 0, 3.14)
+        r1 = nn.Tanh()
+        l2 = nn.Linear(8, 16)
+        nn.init.uniform_(l2.weight, 0, 3.14)
+        r2 = nn.Tanh()
+        l3 = nn.Linear(16, 16)
+        nn.init.uniform_(l3.weight, 0, 3.14)
+        r3 = nn.Tanh()
+        l4 = nn.Linear(16, 1)
+        nn.init.uniform_(l4.weight, 0, 3.14)
+        layers = [l1, r1, l2, r2, l3, r3, l4]
+        self.module_list = nn.ModuleList(layers)
+    
     def forward(self, x):
-        return self.layers(x)
+        for layer in self.module_list:
+            x = layer(x)
+        return x
 
-# Создаем экземпляр фиксированного MLP
-# Create an instance of the fixed MLP
+# Создаем экземпляр фиксированной сети
+# Create an instance of the fixed network
 fixed_mlp = FixedMLP()
 
-# Генерируем случайные входные данные
-# Generate random input data
-input_data = torch.randn(1000, 10)  # 1000 образцов, каждый с 10 признаками
-                                    # 1000 samples, each with 10 features
+# Генерируем входные данные в соответствии с рекомендациями
+# Generate input data as per recommendations
+n_points = 1000  # Количество точек
+input_shape = 2  # Размерность входа
+input_data = 3.0 * torch.randn(n_points, input_shape) + 5.0  # Масштабируем и смещаем данные
 
-# Получаем выходы фиксированного MLP
-# Obtain outputs from the fixed MLP
+# Получаем выходы фиксированной сети
+# Obtain outputs from the fixed network
 with torch.no_grad():
     output_data = fixed_mlp(input_data)
 
-# Разделяем на обучающую и тестовую выборки
-# Split into training and testing datasets
-X_train, X_test, y_train, y_test = train_test_split(
+# Разделяем на обучающую и валидационную выборки
+# Split into training and validation datasets
+X_train, X_val, y_train, y_val = train_test_split(
     input_data.numpy(), output_data.numpy(), test_size=0.2, random_state=42
 )
 
-# Определяем новую модель MLP
-# Define the new MLP model
+# Нормализация данных
+# Data normalization
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_val = scaler.transform(X_val)
+
+# Определяем новую модель MLP, которую будем обучать
+# Define the new MLP model to be trained
 class MLP2(nn.Module):
     def __init__(self):
         super(MLP2, self).__init__()
         self.layers = nn.Sequential(
-            nn.Linear(10, 20),
+            nn.Linear(2, 16),
             nn.ReLU(),
-            nn.Linear(20, 1)
+            nn.Dropout(0.2),
+            nn.Linear(16, 32),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(32, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
         )
-
+    
     def forward(self, x):
         return self.layers(x)
 
@@ -69,89 +82,106 @@ mlp2 = MLP2()
 # Определяем функцию потерь и оптимизатор
 # Define the loss function and optimizer
 criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(mlp2.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(mlp2.parameters(), lr=0.0001)
 
 # Преобразуем данные в тензоры
 # Convert data to tensors
 X_train_tensor = torch.from_numpy(X_train).float()
-y_train_tensor = torch.from_numpy(y_train).float()
+y_train_tensor = torch.from_numpy(y_train).float().view(-1, 1)
+X_val_tensor = torch.from_numpy(X_val).float()
+y_val_tensor = torch.from_numpy(y_val).float().view(-1, 1)
 
-# Добавляем список для сохранения значений функции потерь
-# Add a list to store loss values
-loss_values = []
+# Добавляем списки для сохранения значений функции потерь
+# Add lists to store loss values
+train_loss_values = []
+val_loss_values = []
 
-# Обучение модели
-# Train the model
-num_epochs = 100
+# Обучение модели с ранней остановкой
+# Train the model with early stopping
+num_epochs = 200
+best_val_loss = float('inf')
+patience = 10
+trigger_times = 0
+
 for epoch in range(num_epochs):
+    # Обучение
+    mlp2.train()
     optimizer.zero_grad()  # Обнуляем градиенты
-                           # Zero the gradients
-    outputs = mlp2(X_train_tensor)  # Получаем предсказания
-                                     # Get predictions
-    loss = criterion(outputs, y_train_tensor)  # Вычисляем потерю
-                                               # Compute loss
-    loss.backward()  # Вычисляем градиенты
-                     # Compute gradients
+    outputs = mlp2(X_train_tensor)  # Получаем предсказания на обучающей выборке
+    train_loss = criterion(outputs, y_train_tensor)  # Вычисляем потерю на обучающей выборке
+    train_loss.backward()  # Вычисляем градиенты
     optimizer.step()  # Обновляем веса
-                      # Update weights
 
-    # Сохраняем значение функции потерь
-    # Save the loss value
-    loss_values.append(loss.item())
+    # Оценка на валидационной выборке
+    mlp2.eval()
+    with torch.no_grad():
+        val_outputs = mlp2(X_val_tensor)
+        val_loss = criterion(val_outputs, y_val_tensor)
+
+    # Сохраняем значения функции потерь
+    train_loss_values.append(train_loss.item())
+    val_loss_values.append(val_loss.item())
+
+    # Реализация ранней остановки
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        trigger_times = 0
+    else:
+        trigger_times += 1
+        if trigger_times >= patience:
+            print(f"Ранняя остановка на эпохе {epoch+1}")
+            break
 
     if (epoch + 1) % 10 == 0:
-        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+        print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {train_loss.item():.4f}, Validation Loss: {val_loss.item():.4f}')
 
 # График функции потерь по эпохам
 # Plot Loss vs Epochs
 plt.figure(figsize=(10, 6))
-plt.plot(range(1, num_epochs + 1), loss_values, label='Training Loss / Функция потерь', color='blue')
-plt.title('График функции потерь по эпохам / Loss vs Epochs')
-plt.xlabel('Эпоха / Epoch')
-plt.ylabel('Loss / Функция потерь')
+plt.plot(range(1, len(train_loss_values) + 1), train_loss_values, label='Training Loss', color='blue')
+plt.plot(range(1, len(val_loss_values) + 1), val_loss_values, label='Validation Loss', color='orange')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
 plt.legend()
 plt.grid(True)
 plt.show()
 
-# Оценка модели на тестовых данных
-# Evaluate the model on test data
-X_test_tensor = torch.from_numpy(X_test).float()
-y_test_tensor = torch.from_numpy(y_test).float()
-
+# Оценка модели на валидационных данных
+# Evaluate the model on validation data
 with torch.no_grad():
-    predicted = mlp2(X_test_tensor)
-    test_loss = criterion(predicted, y_test_tensor)
-    print(f'Test Loss: {test_loss.item():.4f}')
+    predicted = mlp2(X_val_tensor)
+    val_loss = criterion(predicted, y_val_tensor)
+    print(f'Validation Loss: {val_loss.item():.4f}')
 
 # Преобразуем тензоры в numpy для построения графиков
 # Convert tensors to numpy for plotting
 predicted = predicted.numpy()
-y_test = y_test_tensor.numpy()
+y_val = y_val_tensor.numpy()
 
 # График реальных против предсказанных значений
 # Plot Actual vs Predicted Values
 plt.figure(figsize=(10, 6))
-plt.scatter(y_test, predicted, alpha=0.5, label='Предсказанные значения / Predicted Values')
-plt.title('Реальные против Предсказанных значений / Actual vs Predicted Values')
-plt.xlabel('Реальные значения / Actual Values')
-plt.ylabel('Предсказанные значения / Predicted Values')
+plt.scatter(y_val, predicted, alpha=0.5, label='Predicted Values')
+plt.title('Actual vs Predicted Values')
+plt.xlabel('Actual Values')
+plt.ylabel('Predicted Values')
 
 # Добавляем идеальную линию предсказаний
 # Add ideal prediction line
-min_val = min(y_test.min(), predicted.min())
-max_val = max(y_test.max(), predicted.max())
-plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='Идеальное предсказание / Ideal Prediction')
+min_val = min(y_val.min(), predicted.min())
+max_val = max(y_val.max(), predicted.max())
+plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='Ideal Prediction')
 plt.legend()
 plt.grid(True)
 plt.show()
 
 # График распределения ошибок
 # Plot Residuals Distribution
-residuals = y_test - predicted
+residuals = y_val - predicted
 plt.figure(figsize=(10, 6))
 plt.hist(residuals, bins=30, edgecolor='k', alpha=0.7)
-plt.title('Распределение ошибок (Residuals) / Residuals Distribution')
-plt.xlabel('Ошибка / Error')
-plt.ylabel('Частота / Frequency')
+plt.title('Residuals Distribution')
+plt.xlabel('Error')
+plt.ylabel('Frequency')
 plt.grid(True)
 plt.show()
