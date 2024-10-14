@@ -78,11 +78,28 @@
 
 # Пример вывода
 
- Epoch [10/100], Loss: 0.0523
- Epoch [20/100], Loss: 0.0341
- ...
- Epoch [100/100], Loss: 0.0012
- Test Loss: 0.0015
+Epoch [10/200], Training Loss: 769.7079, Validation Loss: 768.4131
+Epoch [20/200], Training Loss: 768.7037, Validation Loss: 767.5059
+Epoch [30/200], Training Loss: 767.8766, Validation Loss: 766.6125
+Epoch [40/200], Training Loss: 767.0144, Validation Loss: 765.7308
+Epoch [50/200], Training Loss: 766.0652, Validation Loss: 764.8602
+Epoch [60/200], Training Loss: 765.2706, Validation Loss: 763.9924
+Epoch [70/200], Training Loss: 764.3603, Validation Loss: 763.1234
+Epoch [80/200], Training Loss: 763.5190, Validation Loss: 762.2512
+Epoch [90/200], Training Loss: 762.5334, Validation Loss: 761.3652
+Epoch [100/200], Training Loss: 761.7536, Validation Loss: 760.4598
+Epoch [110/200], Training Loss: 760.7340, Validation Loss: 759.5379
+Epoch [120/200], Training Loss: 759.9487, Validation Loss: 758.5977
+Epoch [130/200], Training Loss: 758.8949, Validation Loss: 757.6330
+Epoch [140/200], Training Loss: 758.1440, Validation Loss: 756.6401
+Epoch [150/200], Training Loss: 756.9310, Validation Loss: 755.6119
+Epoch [160/200], Training Loss: 755.7559, Validation Loss: 754.5428
+Epoch [170/200], Training Loss: 754.7654, Validation Loss: 753.4315
+Epoch [180/200], Training Loss: 753.3693, Validation Loss: 752.2722
+Epoch [190/200], Training Loss: 752.2056, Validation Loss: 751.0578
+Epoch [200/200], Training Loss: 751.2512, Validation Loss: 749.7812
+
+Validation Loss: 749.7812
 
 # Дополнительная информация
 
