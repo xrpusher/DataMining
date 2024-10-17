@@ -64,8 +64,8 @@ class FixedMLP(nn.Module):
 # Создание экземпляра FixedMLP
 fixed_mlp = FixedMLP()
 
-# Generate input data as per the professor's recommendation
-# Генерация входных данных согласно рекомендации преподавателя
+# Generate input data
+# Генерация входных данных
 n_points = 1000  # Number of data points
 # Количество точек данных
 input_shape = 2  # Input dimension
