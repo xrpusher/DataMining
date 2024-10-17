@@ -1,114 +1,65 @@
-# Data Mining
+# Project Overview
 
-# Описание проекта
+This project implements a machine learning framework using PyTorch to create a neural network model. It includes both a fixed model (Target Network) and an inverse model (Inverse MLP), alongside an Expectation-Maximization algorithm for Gaussian Mixture Models (GMM).
 
-# Этот проект демонстрирует:
+# File Descriptions
+1. Target Network Implementation
+2. 
+File Purpose:
+Defines the architecture of a fixed Multi-Layer Perceptron (MLP) network, referred to as Target.
+Key Components:
+Architecture:
+A neural network with four layers, utilizing Tanh activation functions.
+Weight Initialization: Weights are initialized uniformly between 0 and π.
+Input/Output:
+Takes 2-dimensional input and produces a single output.
 
-1. Создание фиксированного MLP (Multilayer Perceptron) с предопределенными весами с использованием PyTorch.
-2. Генерацию датасета путем пропуска случайных входных данных через фиксированный MLP.
-3. Обучение нового MLP (MLP2) на сгенерированном датасете для приближения поведения фиксированного MLP.
+3. Inverse MLP Implementation
+   
+File Purpose:
+Implements an inverse neural network model (InverseMLP) to predict the original inputs based on the outputs from the Target network.
+Key Components:
+Architecture: Consists of multiple layers, including dropout layers for regularization.
+Training: The model is trained using Mean Squared Error (MSE) loss with early stopping based on validation loss.
 
-# Требования
+4. Gaussian Mixture Model (GMM) Implementation
+   
+File Purpose:
+Implements the Expectation-Maximization (EM) algorithm for fitting a Gaussian Mixture Model.
+Key Components:
+Multivariate Gaussian Density Function: Computes the probability density function for multivariate normal distribution.
+E-Step and M-Step: Performs the expectation and maximization steps to fit the model parameters.
+Visualization:
+Plots the Gaussian distributions and clusters based on the model parameters.
 
-- Python 3.9 >
-- PyTorch
-- scikit-learn
+5. Data Generation and Visualization
+   
+File Purpose:
+Generates synthetic data and visualizes results from both the Target network and the Inverse MLP.
+Key Components:
+Data Generation:
+Creates input data based on a normal distribution.
+Training and Validation:
+Splits the dataset into training and validation sets, and normalizes the data.
+Plots:
+Displays training and validation loss over epochs, actual vs. predicted values, and residual distributions.
 
-# Установка
+6. Utility Functions
 
-1. Клонируйте репозиторий или скопируйте файлы проекта в вашу рабочую директорию.
+File Purpose:
+Contains helper functions for data processing, visualization, and model evaluation.
+Key Components:
+Residuals Distribution:
+Plots the distribution of prediction errors.
+Ideal Prediction Line:
+Adds a line representing ideal predictions on scatter plots.
+Installation Requirements
+To run this project, ensure you have the following libraries installed:
 
-2. Создайте виртуальное окружение (рекомендуется):
+# Usage Instructions
+To train the models, run the respective scripts for the Target and Inverse MLP implementations.
+Visualizations will automatically generate once the models have been trained, displaying various insights about model performance.
+Conclusion
+This project serves as an illustrative example of using neural networks in a supervised learning context, along with clustering methods using Gaussian Mixture Models. The architecture and implementation strategies demonstrated can be further expanded for more complex applications.
 
-   python -m venv venv
-
-3. Активируйте виртуальное окружение:
-
-  - Windows:
-
-      venv\Scripts\activate
-
-    - macOS/Linux:
-
-      source venv/bin/activate
-
- 4. Установите необходимые пакеты:
-
-    pip install -r requirements.txt
-
-# Запуск кода
-
-# Выполните Python-скрипт:
-
-    python homework_1.py
-
-# Описание проекта
-
- ### 1. FixedMLP
-
- - Описание: Нейронная сеть с фиксированными весами, инициализированными в диапазоне [-1, 1].
- - Архитектура:
-   - Входной слой: 10 признаков → 20 нейронов.
-   - Функция активации: ReLU.
-   - Выходной слой: 1 нейрон.
-
- ### 2. Генерация данных
-
- - Процесс:
-   - Генерируется 1000 образцов случайных входных данных (тензор размером [1000, 10]).
-   - Входные данные проходят через FixedMLP для получения выходных значений.
-   - Полученный датасет разделяется на обучающую (80%) и тестовую (20%) выборки.
-
- ### 3. MLP2
-
- - Описание: Новая нейронная сеть с той же архитектурой, что и у FixedMLP, но с случайной инициализацией весов.
- - Цель: Обучить MLP2 на сгенерированных данных, чтобы она могла приблизить поведение FixedMLP.
- - Обучение:
-   - Функция потерь: Mean Squared Error (MSE).
-   - Оптимизатор: Adam с коэффициентом обучения lr=0.001.
-   - Количество эпох: 100.
- - Оценка:
-   - После обучения модель оценивается на тестовом наборе данных.
-   - Выводится значение функции потерь на тестовых данных.
-
-# Результаты
-
-- Обучение: Модель MLP2 успешно обучается приближать поведение фиксированной модели FixedMLP.
-- Функция потерь: Низкое значение MSE на тестовых данных указывает на хорошее качество обучения.
-
-# Пример вывода
-
-Epoch [10/200], Training Loss: 769.7079, Validation Loss: 768.4131
-Epoch [20/200], Training Loss: 768.7037, Validation Loss: 767.5059
-Epoch [30/200], Training Loss: 767.8766, Validation Loss: 766.6125
-Epoch [40/200], Training Loss: 767.0144, Validation Loss: 765.7308
-Epoch [50/200], Training Loss: 766.0652, Validation Loss: 764.8602
-Epoch [60/200], Training Loss: 765.2706, Validation Loss: 763.9924
-Epoch [70/200], Training Loss: 764.3603, Validation Loss: 763.1234
-Epoch [80/200], Training Loss: 763.5190, Validation Loss: 762.2512
-Epoch [90/200], Training Loss: 762.5334, Validation Loss: 761.3652
-Epoch [100/200], Training Loss: 761.7536, Validation Loss: 760.4598
-Epoch [110/200], Training Loss: 760.7340, Validation Loss: 759.5379
-Epoch [120/200], Training Loss: 759.9487, Validation Loss: 758.5977
-Epoch [130/200], Training Loss: 758.8949, Validation Loss: 757.6330
-Epoch [140/200], Training Loss: 758.1440, Validation Loss: 756.6401
-Epoch [150/200], Training Loss: 756.9310, Validation Loss: 755.6119
-Epoch [160/200], Training Loss: 755.7559, Validation Loss: 754.5428
-Epoch [170/200], Training Loss: 754.7654, Validation Loss: 753.4315
-Epoch [180/200], Training Loss: 753.3693, Validation Loss: 752.2722
-Epoch [190/200], Training Loss: 752.2056, Validation Loss: 751.0578
-Epoch [200/200], Training Loss: 751.2512, Validation Loss: 749.7812
-
-Validation Loss: 749.7812
-
-# Дополнительная информация
-
- - Расширение:
-   - Можно изменять архитектуру сети (количество слоев, нейронов) и наблюдать, как это влияет на обучение.
-   - Можно использовать разные функции активации или оптимизаторы.
- - Визуализация:
-   - Для более глубокого анализа можно добавить визуализацию функции потерь или распределения предсказаний.
-
-# Лицензия
-
- Этот проект лицензирован под лицензией MIT License.
+There is also a problem with a proof - task 4
