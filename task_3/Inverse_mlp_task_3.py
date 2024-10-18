@@ -2,251 +2,162 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
-# Define the FixedMLP (Target Network)
-# Определение FixedMLP (Целевая нн)
+# Определение FixedMLP (Целевая нн) / Definition of FixedMLP (Target Neural Network)
 class FixedMLP(nn.Module):
     def __init__(self):
         super(FixedMLP, self).__init__()
-        # Define the first linear layer with 2 inputs and 4 outputs
-        # Определение первого линейного слоя с 2 входами и 4 выходами
-        l1 = nn.Linear(2, 4)
-        # Initialize weights uniformly between 0 and π
-        # Инициализация весов равномерно в диапазоне от 0 до π
-        nn.init.uniform_(l1.weight, 0, 3.14)
-        # Define the first activation function as Tanh
-        # Определение первой функции активации как Tanh
-        r1 = nn.Tanh()
-        
-        # Define the second linear layer with 4 inputs and 4 outputs
-        # Определение второго линейного слоя с 4 входами и 4 выходами
-        l2 = nn.Linear(4, 4)
-        # Initialize weights uniformly between 0 and π
-        # Инициализация весов равномерно в диапазоне от 0 до π
-        nn.init.uniform_(l2.weight, 0, 3.14)
-        # Define the second activation function as Tanh
-        # Определение второй функции активации как Tanh
-        r2 = nn.Tanh()
-        
-        # Define the third linear layer with 4 inputs and 4 outputs
-        # Определение третьего линейного слоя с 4 входами и 4 выходами
-        l3 = nn.Linear(4, 4)
-        # Initialize weights uniformly between 0 and π
-        # Инициализация весов равномерно в диапазоне от 0 до π
-        nn.init.uniform_(l3.weight, 0, 3.14)
-        # Define the third activation function as Tanh
-        # Определение третьей функции активации как Tanh
-        r3 = nn.Tanh()
-        
-        # Define the fourth linear layer with 4 inputs and 1 output
-        # Определение четвертого линейного слоя с 4 входами и 1 выходом
-        l4 = nn.Linear(4, 1)
-        # Initialize weights uniformly between 0 and π
-        # Инициализация весов равномерно в диапазоне от 0 до π
-        nn.init.uniform_(l4.weight, 0, 3.14)
-        
-        # Create a list of all layers
-        # Создание списка всех слоев
-        layers = [l1, r1, l2, r2, l3, r3, l4]
-        # Use ModuleList to store layers
-        # Использование ModuleList для хранения слоев
-        self.module_list = nn.ModuleList(layers)
+        l1 = nn.Linear(2, 4)  # Линейный слой с 2 входами и 4 выходами / Linear layer with 2 inputs and 4 outputs
+        nn.init.uniform_(l1.weight, 0, 3.14)  # Инициализация весов равномерно от 0 до π / Weight initialization uniformly from 0 to π
+        r1 = nn.Tanh()  # Функция активации Tanh / Tanh activation function
+        l2 = nn.Linear(4, 4)  # Линейный слой с 4 входами и 4 выходами / Linear layer with 4 inputs and 4 outputs
+        nn.init.uniform_(l2.weight, 0, 3.14)  # Инициализация весов / Weight initialization
+        r2 = nn.Tanh()  # Функция активации Tanh / Tanh activation function
+        l3 = nn.Linear(4, 4)  # Линейный слой с 4 входами и 4 выходами / Linear layer with 4 inputs and 4 outputs
+        nn.init.uniform_(l3.weight, 0, 3.14)  # Инициализация весов / Weight initialization
+        r3 = nn.Tanh()  # Функция активации Tanh / Tanh activation function
+        l4 = nn.Linear(4, 1)  # Линейный слой с 4 входами и 1 выходом / Linear layer with 4 inputs and 1 output
+        nn.init.uniform_(l4.weight, 0, 3.14)  # Инициализация весов / Weight initialization
+        layers = [l1, r1, l2, r2, l3, r3, l4]  # Список слоев / List of layers
+        self.module_list = nn.ModuleList(layers)  # Использование ModuleList для хранения слоев / Using ModuleList to store layers
     
     def forward(self, x):
-        # Pass the input through each layer in sequence
-        # Пропуск входных данных через каждый слой по порядку
-        for layer in self.module_list:
+        for layer in self.module_list:  # Пропуск входных данных через каждый слой / Pass the input through each layer
             x = layer(x)
         return x
 
-# Create an instance of the FixedMLP
-# Создание экземпляра FixedMLP
-fixed_mlp = FixedMLP()
+fixed_mlp = FixedMLP()  # Создание экземпляра FixedMLP / Creating an instance of FixedMLP
 
-# Generate input data
-# Генерация входных данных
-n_points = 1000  # Number of data points
-# Количество точек данных
-input_shape = 2  # Input dimension
-# Размерность входных данных
-# Generate data from a normal distribution, scaled by 3 and shifted by 5
-# Генерация данных из нормального распределения, масштабированных на 3 и сдвинутых на 5
-input_data = 3.0 * torch.randn(n_points, input_shape) + 5.0
+# Генерация входных данных / Generating input data
+n_points = 50000  # Значительно увеличиваем количество точек данных / Significantly increasing the number of data points
+input_shape = 2
+input_data = 3.0 * torch.randn(n_points, input_shape) + 5.0  # Генерация данных с нормальным распределением / Generating data from normal distribution
 
-# Obtain outputs from the FixedMLP
-# Получение выходных данных из FixedMLP
+# Получение выходных данных из FixedMLP / Getting output data from FixedMLP
 with torch.no_grad():
     output_data = fixed_mlp(input_data)
 
-# Prepare the training data: inputs are outputs from FixedMLP, targets are original inputs
-# Подготовка обучающих данных: входы — выходы из FixedMLP, цели — оригинальные входы
-X = output_data.numpy()
-y = input_data.numpy()
+# Подготовка обучающих данных / Preparing training data
+X = output_data.numpy()  # Преобразование выходных данных в numpy массив / Converting output data to numpy array
+y = input_data.numpy()  # Преобразование входных данных в numpy массив / Converting input data to numpy array
 
-# Split into training and validation datasets
-# Разделение на обучающую и валидационную выборки
+# Разделение на обучающую и валидационную выборки / Splitting into training and validation datasets
 X_train, X_val, y_train, y_val = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Data normalization (optional but can improve training)
-# Нормализация данных (опционально, но может улучшить обучение)
-scaler_X = StandardScaler()
-X_train = scaler_X.fit_transform(X_train)
-X_val = scaler_X.transform(X_val)
+# Преобразование данных в тензоры (без нормализации) / Converting data to tensors (without normalization)
+X_train_tensor = torch.from_numpy(X_train).float()  # Преобразование обучающих входов / Converting training inputs
+y_train_tensor = torch.from_numpy(y_train).float()  # Преобразование обучающих целей / Converting training targets
+X_val_tensor = torch.from_numpy(X_val).float()  # Преобразование валидационных входов / Converting validation inputs
+y_val_tensor = torch.from_numpy(y_val).float()  # Преобразование валидационных целей / Converting validation targets
 
-scaler_y = StandardScaler()
-y_train = scaler_y.fit_transform(y_train)
-y_val = scaler_y.transform(y_val)
-
-# Define the Inverse MLP model
-# Определение модели Inverse MLP
+# Определение модели InverseMLP с уменьшенной сложностью / Definition of InverseMLP with reduced complexity
 class InverseMLP(nn.Module):
     def __init__(self):
         super(InverseMLP, self).__init__()
-        # Define a sequential model with multiple layers
-        # Определение последовательной модели с несколькими слоями
         self.layers = nn.Sequential(
-            nn.Linear(1, 16),    # First layer: 1 input to 16 neurons
-            nn.ReLU(),           # ReLU activation
-            nn.Dropout(0.2),     # Dropout with probability 0.2
-            nn.Linear(16, 32),   # Second layer: 16 inputs to 32 neurons
-            nn.ReLU(),           # ReLU activation
-            nn.Dropout(0.2),     # Dropout with probability 0.2
-            nn.Linear(32, 32),   # Third layer: 32 inputs to 32 neurons
-            nn.ReLU(),           # ReLU activation
-            nn.Linear(32, 2)     # Output layer: 32 inputs to 2 outputs (matches input_data's dimension)
+            nn.Linear(1, 6),   # Уменьшаем количество нейронов / Reducing the number of neurons
+            nn.Tanh(),
+            nn.Linear(6, 12),  # Увеличиваем количество нейронов / Increasing the number of neurons
+            nn.Tanh(),
+            nn.Linear(12, 2)
         )
         
     def forward(self, x):
-        # Pass the input through the sequential layers
-        # Пропуск входных данных через последовательные слои
-        return self.layers(x)
+        return self.layers(x)  # Пропуск входных данных через модель / Passing input through the model
 
-# Create an instance of InverseMLP
-# Создание экземпляра InverseMLP
-inverse_mlp = InverseMLP()
+inverse_mlp = InverseMLP()  # Создание экземпляра InverseMLP / Creating an instance of InverseMLP
 
-# Define the loss function and optimizer
-# Определение функции потерь и оптимизатора
-criterion = nn.MSELoss()  # Mean Squared Error loss
-# Функция потерь: среднеквадратичная ошибка
-optimizer = torch.optim.Adam(inverse_mlp.parameters(), lr=0.0001)  # Adam optimizer with learning rate 0.0001
-# Оптимизатор: Adam с скоростью обучения 0.0001
+# Определение функции потерь и оптимизатора / Defining loss function and optimizer
+criterion = nn.MSELoss()  # Функция потерь: среднеквадратичная ошибка / Loss function: Mean Squared Error
+optimizer = torch.optim.Adam(inverse_mlp.parameters(), lr=0.001)  # Оптимизатор Adam с заданной скоростью обучения / Adam optimizer with specified learning rate
 
-# Convert data to tensors
-# Преобразование данных в тензоры
-X_train_tensor = torch.from_numpy(X_train).float()
-y_train_tensor = torch.from_numpy(y_train).float()
-X_val_tensor = torch.from_numpy(X_val).float()
-y_val_tensor = torch.from_numpy(y_val).float()
-
-# Lists to store loss values
-# Списки для хранения значений потерь
+# Списки для хранения значений потерь / Lists to store loss values
 train_loss_values = []
 val_loss_values = []
 
-# Train the model with early stopping
-# Обучение модели с ранней остановкой
-num_epochs = 500  # Maximum number of epochs
-# Максимальное количество эпох
-best_val_loss = float('inf')  # Initialize best validation loss to infinity
-# Инициализация наилучшей валидационной потери как бесконечность
-patience = 15  # Number of epochs to wait for improvement before stopping
-# Количество эпох ожидания улучшения перед остановкой
-trigger_times = 0  # Counter for patience
+# Обучение модели с ранней остановкой / Training the model with early stopping
+num_epochs = 500
+best_val_loss = float('inf')  # Инициализация наилучшей валидационной потери / Initialize best validation loss
+patience = 15  # Количество эпох для ожидания улучшения перед остановкой / Number of epochs to wait for improvement before stopping
+trigger_times = 0  # Счетчик для patience / Counter for patience
 
 for epoch in range(num_epochs):
-    # Training phase
-    # Фаза обучения
-    inverse_mlp.train()
-    optimizer.zero_grad()  # Zero the gradients
-    # Обнуление градиентов
-    outputs = inverse_mlp(X_train_tensor)  # Predict inputs from outputs
-    # Предсказание входов из выходов
-    train_loss = criterion(outputs, y_train_tensor)  # Compute training loss
-    # Вычисление потерь на обучающей выборке
-    train_loss.backward()  # Backpropagate
-    # Обратное распространение ошибки
-    optimizer.step()  # Update weights
-    # Обновление весов
+    # Фаза обучения / Training phase
+    inverse_mlp.train()  # Переключение в режим обучения / Switching to training mode
+    optimizer.zero_grad()  # Обнуление градиентов / Zero the gradients
+    outputs = inverse_mlp(X_train_tensor)  # Предсказание на обучающей выборке / Predictions on training data
+    train_loss = criterion(outputs, y_train_tensor)  # Вычисление потерь на обучающей выборке / Compute training loss
+    train_loss.backward()  # Обратное распространение / Backpropagation
+    optimizer.step()  # Обновление параметров модели / Update model parameters
     
-    # Validation phase
-    # Фаза валидации
-    inverse_mlp.eval()
-    with torch.no_grad():
-        val_outputs = inverse_mlp(X_val_tensor)
-        val_loss = criterion(val_outputs, y_val_tensor)
+    # Фаза валидации / Validation phase
+    inverse_mlp.eval()  # Переключение в режим оценки / Switching to evaluation mode
+    with torch.no_grad():  # Отключение градиентов / Disable gradient calculation
+        val_outputs = inverse_mlp(X_val_tensor)  # Предсказание на валидационной выборке / Predictions on validation data
+        val_loss = criterion(val_outputs, y_val_tensor)  # Вычисление потерь на валидационной выборке / Compute validation loss
     
-    # Store loss values
-    # Сохранение значений потерь
+    # Сохранение значений потерь / Storing loss values
     train_loss_values.append(train_loss.item())
     val_loss_values.append(val_loss.item())
     
-    # Early stopping
-    # Ранняя остановка
+    # Ранняя остановка / Early stopping
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         trigger_times = 0
     else:
         trigger_times += 1
         if trigger_times >= patience:
-            print(f"Early stopping at epoch {epoch+1}")
+            print(f"Early stopping at epoch {epoch+1}")  # Сообщение о ранней остановке / Early stopping message
             break
     
-    # Print loss every 10 epochs
-    # Вывод потерь каждые 10 эпох
+    # Вывод потерь каждые 10 эпох / Print loss every 10 epochs
     if (epoch + 1) % 10 == 0:
         print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {train_loss.item():.6f}, Validation Loss: {val_loss.item():.6f}')
 
-# Plot Loss vs Epochs
-# Построение графика потерь по эпохам
+# Построение графика потерь по эпохам / Plotting loss over epochs
 plt.figure(figsize=(10, 6))
-plt.plot(range(1, len(train_loss_values) + 1), train_loss_values, label='Training Loss', color='blue')
-plt.plot(range(1, len(val_loss_values) + 1), val_loss_values, label='Validation Loss', color='orange')
-plt.xlabel('Epochs')  # Label for X-axis
-plt.ylabel('Loss')     # Label for Y-axis
-plt.title('Training and Validation Loss Over Epochs')  # Title of the plot
-plt.legend()  # Display legend
-plt.grid(True)  # Show grid
+plt.plot(range(1, len(train_loss_values) + 1), train_loss_values, label='Training Loss', color='blue')  # График потерь на обучении / Training loss plot
+plt.plot(range(1, len(val_loss_values) + 1), val_loss_values, label='Validation Loss', color='orange')  # График потерь на валидации / Validation loss plot
+plt.xlabel('Epochs')  # Подпись для оси X / Label for X-axis
+plt.ylabel('Loss')  # Подпись для оси Y / Label for Y-axis
+plt.title('Training and Validation Loss Over Epochs')  # Заголовок графика / Title of the plot
+plt.legend()  # Отображение легенды / Display legend
+plt.grid(True)  # Показать сетку / Show grid
 plt.show()
 
-# Evaluate the model on validation data
-# Оценка модели на валидационных данных
+# Оценка модели на валидационных данных / Evaluating the model on validation data
 inverse_mlp.eval()
 with torch.no_grad():
-    predicted_inputs = inverse_mlp(X_val_tensor)
-    val_loss = criterion(predicted_inputs, y_val_tensor)
-    print(f'Validation Loss: {val_loss.item():.6f}')
+    predicted_inputs = inverse_mlp(X_val_tensor)  # Предсказания на валидационных данных / Predictions on validation data
+    val_loss = criterion(predicted_inputs, y_val_tensor)  # Вычисление потерь на валидационной выборке / Compute validation loss
+    print(f'Validation Loss: {val_loss.item():.6f}')  # Вывод потерь на валидационной выборке / Print validation loss
 
-# Inverse transform the data to original scale
-# Обратное преобразование данных к исходному масштабу
-predicted_inputs_np = scaler_y.inverse_transform(predicted_inputs.numpy())
-actual_inputs_np = scaler_y.inverse_transform(y_val_tensor.numpy())
+# Преобразование тензоров в numpy массивы / Convert tensors to numpy arrays
+predicted_inputs_np = predicted_inputs.numpy()
+actual_inputs_np = y_val_tensor.numpy()
 
-# Plot Actual vs Predicted Inputs
-# Построение графика фактических vs предсказанных входов
+# Построение графика фактических vs предсказанных входов / Plotting Actual vs Predicted Inputs
 plt.figure(figsize=(10, 6))
-plt.scatter(actual_inputs_np[:, 0], predicted_inputs_np[:, 0], alpha=0.5, label='Dimension 1')  # Dimension 1
-plt.scatter(actual_inputs_np[:, 1], predicted_inputs_np[:, 1], alpha=0.5, label='Dimension 2')  # Dimension 2
-plt.title('Actual vs Predicted Inputs')  # Title of the plot
-plt.xlabel('Actual Inputs')  # Label for X-axis
-plt.ylabel('Predicted Inputs')  # Label for Y-axis
-plt.legend()  # Display legend
-plt.grid(True)  # Show grid
+plt.scatter(actual_inputs_np[:, 0], predicted_inputs_np[:, 0], alpha=0.5, label='Dimension 1')  # Размерность 1 / Dimension 1
+plt.scatter(actual_inputs_np[:, 1], predicted_inputs_np[:, 1], alpha=0.5, label='Dimension 2')  # Размерность 2 / Dimension 2
+plt.title('Actual vs Predicted Inputs')  # Заголовок графика / Title of the plot
+plt.xlabel('Actual Inputs')  # Подпись для оси X / Label for X-axis
+plt.ylabel('Predicted Inputs')  # Подпись для оси Y / Label for Y-axis
+plt.legend()  # Отображение легенды / Display legend
+plt.grid(True)  # Показать сетку / Show grid
 plt.show()
 
-# Plot Residuals Distribution for both dimensions
-# Построение распределения остатков для обеих размерностей
-residuals = actual_inputs_np - predicted_inputs_np
+# Построение распределения остатков для обеих размерностей / Plotting Residuals Distribution for both dimensions
+residuals = actual_inputs_np - predicted_inputs_np  # Вычисление остатков / Calculate residuals
 
 plt.figure(figsize=(10, 6))
-plt.hist(residuals[:, 0], bins=30, alpha=0.7, label='Dimension 1')  # Histogram for Dimension 1
-plt.hist(residuals[:, 1], bins=30, alpha=0.7, label='Dimension 2')  # Histogram for Dimension 2
-plt.title('Residuals Distribution')  # Title of the plot
-plt.xlabel('Error')  # Label for X-axis
-plt.ylabel('Frequency')  # Label for Y-axis
-plt.legend()  # Display legend
-plt.grid(True)  # Show grid
+plt.hist(residuals[:, 0], bins=30, alpha=0.7, label='Dimension 1')  # Гистограмма для размерности 1 / Histogram for Dimension 1
+plt.hist(residuals[:, 1], bins=30, alpha=0.7, label='Dimension 2')  # Гистограмма для размерности 2 / Histogram for Dimension 2
+plt.title('Residuals Distribution')  # Заголовок графика / Title of the plot
+plt.xlabel('Error')  # Подпись для оси X / Label for X-axis
+plt.ylabel('Frequency')  # Подпись для оси Y / Label for Y-axis
+plt.legend()  # Отображение легенды / Display legend
+plt.grid(True)  # Показать сетку / Show grid
 plt.show()
