@@ -1,0 +1,11 @@
+pandas
+numpy
+requests
+matplotlib
+seaborn
+pyqt5
+python-dateutil
+tzdata
+fastapi 
+uvicorn 
+pydantic
