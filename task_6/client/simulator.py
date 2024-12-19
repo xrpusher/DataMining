@@ -32,13 +32,25 @@ class Simulator:
 
             if bid_response.optimized_price > bid_response.price_to_bid:
                 raise Exception("simulator.run(): optimized price > bid price")
-            if bid_response.status != "explored":
+
+            # Если статус "explored", как и было, имитируем аукцион и отправляем фидбек
+            if bid_response.status == "explored":
+                impression = self.auction.step(bid_response.optimized_price)
+                if impression:
+                    res = self.client.send_impression(bid_response.req_id, bid_response.optimized_price, impression)
+                    if not res:
+                        self.log.debug(" ---> send_impression(): ack == false")
+                # Сохраняем данные о разнице цен
                 self.save(bid_response.price_to_bid, bid_response.optimized_price)
-                continue
-            impression = self.auction.step(bid_response.optimized_price)
+            
+            else:
+                # Если статус "exploited"
+                # Аналогично имитируем аукцион для exploitation
+                impression = self.auction.step(bid_response.optimized_price)
+                if impression:
+                    res = self.client.send_impression(bid_response.req_id, bid_response.optimized_price, impression)
+                    if not res:
+                        self.log.debug(" ---> send_impression(): ack == false")
 
-            if impression:
-                res = self.client.send_impression(bid_response.req_id, bid_response.optimized_price, impression)
-                if not res:
-                    self.log.debug(" ---> send_impression(): ack == false")
-
+                # Сохраняем данные о разнице цен (как раньше при non-explored)
+                self.save(bid_response.price_to_bid, bid_response.optimized_price)

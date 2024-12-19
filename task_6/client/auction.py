@@ -71,6 +71,5 @@ class Auction:
         for i in range(N - 1):
             if self.feasible_prices[i] <= price <= self.feasible_prices[i + 1]:
                 return float(self.curve[i])
-
-        self.log.debug(f"unfeasible price: {price} [{self.feasible_prices[0], self.feasible_prices[N-1]}]")
-
+        self.log.debug(f"unfeasible price: {price} [{self.feasible_prices[0]}, {self.feasible_prices[N-1]}]")
+        return 0.0  # Вместо None вернуть 0.0
